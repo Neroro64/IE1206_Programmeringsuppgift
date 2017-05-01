@@ -19,6 +19,7 @@
 
 /* Decimal mark: point or comma - what do you like?                   */
 #define DECIMAL_MARK ','
+#pragma codepage 0
 
 void initserial( void );
 void ADinit( void );
@@ -39,7 +40,9 @@ char phonemestart_lo(char);
 char sentence(char);
 
 /* Global variables */
+#pragma rambank 1
 char message[61];  // must be long enough for the message
+#pragma codepage 0
 char mode;
 char index;
 char phoneme;
@@ -141,7 +144,6 @@ interrupt int_server( void )
   int_restore_registers
 }
 
-
 void main(void)
 {
   
@@ -208,7 +210,7 @@ void main(void)
     else PORTC.0 = 0;
     if(PORTA.3 == 0 && mode == 0) mode = 1; // SW1 talk again
      
-     while(PORTA.1) ; // wait for key pressed - new measurement 
+     while(PORTA.3) ; // wait for key pressed - new measurement 
      PORTC.0=1;       // LED Sampling indicator
 	
       /* Now measure the Voltage [V]  */
@@ -229,7 +231,7 @@ void main(void)
 
       delay10(1);         // Debounce
       PORTC.0=0;          // LED off measurement done 
-      while (!PORTA.1) ;  // wait for key released
+      while (!PORTA.3) ;  // wait for key released
       delay10(1);         // Debounce
      }
 }
@@ -243,7 +245,6 @@ void main(void)
 
 
 /* **** ADconverter function ************** */
-
 void ADinit( void )
 {
   // AD setup 
@@ -417,6 +418,7 @@ void delay10( char n)
 /* the code "0xFF" is used as "end of sentence"  */
 
 /* "we speak not only to be heard but to be understood" */
+#pragma codepage 1
 char sentence( char index)
       {
         skip(index);
