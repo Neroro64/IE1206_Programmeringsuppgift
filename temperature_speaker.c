@@ -208,10 +208,12 @@ void main(void)
    {
     if(mode !=0) PORTC.0 = 1; // LED on when talking
     else PORTC.0 = 0;
-    if(PORTA.3 == 0 && mode == 0) mode = 1; // SW1 talk again
+    //if(PORTA.3 == 0 && mode == 0) mode = 1; // SW1 talk again
      
      while(PORTA.3) ; // wait for key pressed - new measurement 
-     PORTC.0=1;       // LED Sampling indicator
+     if (mode == 0) mode = 1;
+	 delay10(100);
+	 PORTC.0=1;       // LED Sampling indicator
 	
       /* Now measure the Voltage [V]  */
       GO=1;         // start AD
@@ -492,7 +494,6 @@ char sentence( char index)
 
 /*
     I2C interface for 24LC512    
-
     Nathan Seidle
     nathan.seidle@colorado.edu
     
