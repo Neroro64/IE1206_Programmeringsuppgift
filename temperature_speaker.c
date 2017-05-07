@@ -228,8 +228,8 @@ void main(void)
 	    advalue *= SCALE_FACTOR ;  
 
 	  // the supplied number of decimals is wrong please correct it!
-      longDecimal_out(advalue, DECIMALS, UN_SIGNED); 
-      putchar('\r'); putchar('\n');
+      // longDecimal_out(advalue, DECIMALS, UN_SIGNED); 
+      // putchar('\r'); putchar('\n');
 
       delay10(1);         // Debounce
       PORTC.0=0;          // LED off measurement done 
@@ -307,37 +307,37 @@ void string_out(const char * string)
 
 /* **** print decimal number **** */
 
-void longDecimal_out(long number, char decimalPlaces, bit un_signed)
-{
-   char string[7]; // temporary buffer for reordering characters
-   char i,temp;
-   string[6] = '\0';
-   string[0] = '+'; 
- if(!un_signed)
-  {
-    if (number < 0 )
-     {
-       string[0] = '-'; 
-       number = -number;
-     }
-  } 
+// void longDecimal_out(long number, char decimalPlaces, bit un_signed)
+// {
+//    char string[7]; // temporary buffer for reordering characters
+//    char i,temp;
+//    string[6] = '\0';
+//    string[0] = '+'; 
+//  if(!un_signed)
+//   {
+//     if (number < 0 )
+//      {
+//        string[0] = '-'; 
+//        number = -number;
+//      }
+//   } 
   
-   for (i = 5; ;i--)
-     {
-       temp = (uns16)number % 10;
-       temp += '0';
-       string[i]=temp;
-       if (i==1) break;
-       (uns16)number /= 10;
-     }
-   for(i = 0 ; ; i++)
-     {
-        if(i==6-decimalPlaces) putchar( DECIMAL_MARK ); 
-        temp = string[i];
-        if( temp == '\0') return;   // found end of string
-        putchar(temp); 
-     }
-} 
+//    for (i = 5; ;i--)
+//      {
+//        temp = (uns16)number % 10;
+//        temp += '0';
+//        string[i]=temp;
+//        if (i==1) break;
+//        (uns16)number /= 10;
+//      }
+//    for(i = 0 ; ; i++)
+//      {
+//         if(i==6-decimalPlaces) putchar( DECIMAL_MARK ); 
+//         temp = string[i];
+//         if( temp == '\0') return;   // found end of string
+//         putchar(temp); 
+//      }
+// } 
 
 
 /* **** delay function **** */
@@ -421,7 +421,7 @@ void delay10( char n)
 
 /* "we speak not only to be heard but to be understood" */
 #pragma codepage 1
-char sentence( char index)
+/*char sentence( char index)
       {
         skip(index);
         return 0x2E;
@@ -483,9 +483,21 @@ char sentence( char index)
         return 0x03;
         return 0x02;
         return 0xFF;
-      }
-
-
+      }*/
+	  
+/*char sentence(char index) { ONE
+	skip(index);
+	return 0x2E;
+	return 0x20;
+	return 0x38;
+	return 0xFF;
+}*/
+char sentence(char index) {
+	skip(index);
+	return 0x0D;
+	return 0x16;
+	return 0xFF;
+}
 
 
 
