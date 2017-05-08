@@ -42,7 +42,10 @@ char phonemestart_hi(char);
 char phonemestart_lo(char);
 char sentence(char);
 
+
+
 char digit(int, char);
+char zero(char);
 char one(char);
 char two(char);
 char three(char);
@@ -54,6 +57,7 @@ char eight(char);
 char nine(char);
 
 /* Global variables */
+#pragma rambank 1
 char message[61];  // must be long enough for the message
 #pragma codepage 0
 char mode;
@@ -61,7 +65,7 @@ char index;
 char phoneme;
 unsigned long count;
 
-bool reference;
+int reference;
 int ref;
 
 #pragma origin 4
@@ -218,7 +222,7 @@ void main(void)
      }*/
 
     index =0;  
-    mode = 1; // OK, now we start talking
+    mode = 0; // OK, now we start talking
 
   while(1)
    {
@@ -246,29 +250,31 @@ void main(void)
 
       if (!reference){
         ref = advalue;
-        reference = !reference;
+        reference = 1;
         continue;
       }
       else {
         int temp = advalue - ref;
-        temp = temp / 20 + REF_TEMP; // temp difference + base temp
+        temp = temp / (unsigned) 20; 
+		temp += REF_TEMP; // temp difference + base temp
 
         char ch;
-        int j, d;
+        unsigned int j, d;
         for (j = 0; j < 2; j++){
           if (!j){
-            d = temp / 10;
+            d = temp / (unsigned) 10;
             if (d == 0)
               continue;
           }
           else
-            d = temp % 10;
+            d = temp % (unsigned) 10;
           for(i=0;;i++)
           {
              ch=digit(d, i);
              message[i]=ch;
              if(ch==0xFF)break; 
           } 
+		  }
         }
 
         if (mode == 0) mode = 1;
@@ -277,12 +283,13 @@ void main(void)
       // longDecimal_out(advalue, DECIMALS, UN_SIGNED); 
       // putchar('\r'); putchar('\n');
 
-      delay10(100);         // Debounce
+      delay10(1);         // Debounce
       PORTC.0=0;          // LED off measurement done 
       while (!PORTA.3) ;  // wait for key released
-      delay10(100);         // Debounce
+      delay10(1);         // Debounce
      }
 }
+
 
 
 
@@ -467,106 +474,52 @@ void delay10( char n)
 
 /* "we speak not only to be heard but to be understood" */
 #pragma codepage 1
-/*char sentence( char index)
-      {
-        skip(index);
-        return 0x2E;
-        return 0x13;
-        return 0x03;
-        return 0x02;
-        return 0x37;
-        return 0x09;
-        return 0x13;
-        return 0x29;
-        return 0x03;
-        return 0x02;
-        return 0x38;
-        return 0x17;
-        return 0x0D;
-        return 0x03;
-        return 0x02;
-        return 0x35;
-        return 0x0B;
-        return 0x2D;
-        return 0x13;
-        return 0x03;
-        return 0x02;
-        return 0x0D;
-        return 0x1F;
-        return 0x03;
-        return 0x02;
-        return 0x3F;
-        return 0x13;
-        return 0x03;
-        return 0x02;
-        return 0x1B;
-        return 0x34;
-        return 0x15;
-        return 0x03;
-        return 0x02;
-        return 0x3F;
-        return 0x0F;
-        return 0x0D;
-        return 0x03;
-        return 0x02;
-        return 0x0D;
-        return 0x1F;
-        return 0x03;
-        return 0x02;
-        return 0x3F;
-        return 0x13;
-        return 0x03;
-        return 0x02;
-        return 0x0F;
-        return 0x0B;
-        return 0x00;
-        return 0x21;
-        return 0x34;
-        return 0x37;
-        return 0x0D;
-        return 0x1F;
-        return 0x15;
-        return 0x03;
-        return 0x02;
-        return 0xFF;
-      }*/
-	  
 /*char sentence(char index) { 
 	skip(index);
-  return 0x2B; // zero
+  return 0x37; // zero
   return 0x13;
   return 0x0E;
-  return 0x3A;
+  return 0x17;
   return 0x04;
-	return 0x2E; // one
-	return 0x20;
-	return 0x1B;
+  
+  return 0x2E; // one
+  return 0x20;
+  return 0x1B;
   return 0x04;
+  
   return 0x0D; // two
+  return 0x16;  
   return 0x16;
   return 0x04;
+  
   return 0x1D; // three
   return 0x0E;
   return 0x13;
   return 0x04;
+  
   return 0x28; // four
   return 0x3A;
   return 0x04;
+  
   return 0x28; // five
   return 0x06;
   return 0x23;
   return 0x04;
+  
   return 0x37; // sex
   return 0x13;
   return 0x29;
   return 0x37;
   return 0x04;
+  
   return 0x37; // seven
-  return 0x07;
+  return 0x13 ;
   return 0x23;
-  return 0x07;
+  return 0x13 ;
   return 0x1D;
   return 0x04;
+  
+  
   return 0x14; // eight
   return 0x0D;
   return 0x04;
@@ -577,15 +530,17 @@ void delay10( char n)
 
 
 }*/
+	  
+
 /*char sentence(char index) {
 	skip(index);
 	return 0x0D;
 	return 0x16;
 	return 0xFF;
 }*/
-
-char digit(int digit, char i) {
-  switch (digit){
+#pragma codepage 2
+char digit(int value, char i) {
+  switch (value){
     case 0: return zero(i); break;
     case 1: return one(i); break;
     case 2: return two(i); break;
@@ -596,15 +551,17 @@ char digit(int digit, char i) {
     case 7: return seven(i); break;
     case 8: return eight(i); break;
     case 9: return nine(i); break;
+	
   }
+  return 0;
 }
 
 char zero (char i){
   skip(index);
-  return 0x2B; 
+  return 0x37; 
   return 0x13;
   return 0x0E;
-  return 0x3A;
+  return 0x17;
   return 0x04;
   return 0xFF;
 }
@@ -652,9 +609,9 @@ char six (char i){
 }
 char seven (char i){
   return 0x37; // seven
-  return 0x07;
+  return 0x13;
   return 0x23;
-  return 0x07;
+  return 0x13;
   return 0x1D;
   return 0x04;
   return 0xFF;
