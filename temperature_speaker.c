@@ -485,19 +485,59 @@ void delay10( char n)
         return 0xFF;
       }*/
 	  
-/*char sentence(char index) { ONE
+char sentence(char index) { 
 	skip(index);
-	return 0x2E;
+  return 0x2B; // zero
+  return 0x13;
+  return 0x0E;
+  return 0x3A;
+  return 0x04;
+	return 0x2E; // one
 	return 0x20;
-	return 0x38;
-	return 0xFF;
-}*/
-char sentence(char index) {
+	return 0x1B;
+  return 0x04;
+  return 0x0D; // two
+  return 0x16;
+  return 0xFF;
+  return 0x04;
+  return 0x1D; // three
+  return 0x0E;
+  return 0x13;
+  return 0x04;
+  return 0x8D; // four
+  return 0x3A;
+  return 0x04;
+  return 0x8D; // five
+  return 0x09;
+  return 0x78;
+  return 0x04;
+  return 0x37; // sex
+  return 0x3A;
+  return 0x29;
+  return 0x37;
+  return 0x04;
+  return 0x37; // seven
+  return 0x0E;
+  return 0x78;
+  return 0x0E;
+  return 0x1B;
+  return 0x04;
+  return 0x14; // eight
+  return 0x0D;
+  return 0x04;
+  return 0x38; // nine
+  return 0x06;
+  return 0x1D;
+  return 0xFF;
+
+
+}
+/*char sentence(char index) {
 	skip(index);
 	return 0x0D;
 	return 0x16;
 	return 0xFF;
-}
+}*/
 
 
 
