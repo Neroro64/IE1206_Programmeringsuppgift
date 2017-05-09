@@ -66,7 +66,7 @@ char phoneme;
 unsigned long count;
 
 int reference;
-int ref;
+unsigned long ref;
 
 #pragma origin 4
 /* interrupt routine                      */
@@ -254,20 +254,20 @@ void main(void)
         continue;
       }
       else {
-        int temp = advalue - ref;
-        temp = temp / (unsigned) 20; 
+        long temp = (signed long) advalue - ref;
+        temp = temp / 20; 
 		temp += REF_TEMP; // temp difference + base temp
 
         char ch;
-        unsigned int j, d;
+        int j, d;
         for (j = 0; j < 2; j++){
           if (!j){
-            d = temp / (unsigned) 10;
+            d = temp / 10;
             if (d == 0)
               continue;
           }
           else
-            d = temp % (unsigned) 10;
+            d = temp % 10;
           for(i=0;;i++)
           {
              ch=digit(d, i);
@@ -278,15 +278,15 @@ void main(void)
         }
 
         if (mode == 0) mode = 1;
-
+	reference = 0;
 	  // the supplied number of decimals is wrong please correct it!
       // longDecimal_out(advalue, DECIMALS, UN_SIGNED); 
       // putchar('\r'); putchar('\n');
 
-      delay10(1);         // Debounce
+      delay10(100);         // Debounce
       PORTC.0=0;          // LED off measurement done 
       while (!PORTA.3) ;  // wait for key released
-      delay10(1);         // Debounce
+      delay10(100);         // Debounce
      }
 }
 
@@ -553,11 +553,11 @@ char digit(int value, char i) {
     case 9: return nine(i); break;
 	
   }
-  return 0;
+  return 0xFF;
 }
 
 char zero (char i){
-  skip(index);
+  skip(i);
   return 0x37; 
   return 0x13;
   return 0x0E;
@@ -566,6 +566,7 @@ char zero (char i){
   return 0xFF;
 }
 char one (char i){
+  skip(i);
   return 0x2E; // one
   return 0x20;
   return 0x1B;
@@ -573,6 +574,7 @@ char one (char i){
   return 0xFF;
 }
 char two (char i){
+  skip(i);
   return 0x0D; // two
   return 0x16;
   return 0x16;
@@ -580,6 +582,7 @@ char two (char i){
   return 0xFF;
 }
 char three (char i){
+  skip(i);
   return 0x1D; // three
   return 0x0E;
   return 0x13;
@@ -587,12 +590,14 @@ char three (char i){
   return 0xFF;
 }
 char four (char i){
+  skip(i);
   return 0x28; // four
   return 0x3A;
   return 0x04;
   return 0xFF;
 }
 char five (char i){
+  skip(i);
    return 0x28; // five
   return 0x06;
   return 0x23;
@@ -600,6 +605,7 @@ char five (char i){
   return 0xFF;
 }
 char six (char i){
+  skip(i);
   return 0x37; // sex
   return 0x13;
   return 0x29;
@@ -608,6 +614,7 @@ char six (char i){
   return 0xFF;
 }
 char seven (char i){
+  skip(i);
   return 0x37; // seven
   return 0x13;
   return 0x23;
@@ -617,12 +624,14 @@ char seven (char i){
   return 0xFF;
 }
 char eight (char i){
+	skip(i);
   return 0x14; // eight
   return 0x0D;
   return 0x04;
   return 0xFF;
 }
 char nine (char i){
+	skip(i);
    return 0x38; // nine
   return 0x06;
   return 0x1D;
