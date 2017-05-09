@@ -254,20 +254,20 @@ void main(void)
         continue;
       }
       else {
-        long temp = (signed long) advalue - ref;
-        temp = temp / 20; 
+        signed long temp = (signed long) advalue - ref;
+        temp = temp / (unsigned) 20; 
 		temp += REF_TEMP; // temp difference + base temp
 
         char ch;
         int j, d;
         for (j = 0; j < 2; j++){
           if (!j){
-            d = temp / 10;
+            d = temp / (unsigned) 10;
             if (d == 0)
               continue;
           }
           else
-            d = temp % 10;
+            d = temp % (unsigned) 10;
           for(i=0;;i++)
           {
              ch=digit(d, i);
@@ -473,7 +473,7 @@ void delay10( char n)
 /* the code "0xFF" is used as "end of sentence"  */
 
 /* "we speak not only to be heard but to be understood" */
-#pragma codepage 1
+
 /*char sentence(char index) { 
 	skip(index);
   return 0x37; // zero
@@ -527,8 +527,6 @@ void delay10( char n)
   return 0x06;
   return 0x1D;
   return 0xFF;
-
-
 }*/
 	  
 
