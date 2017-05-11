@@ -21,7 +21,8 @@
 #define DECIMAL_MARK ','
 
 //base temp
-#define REF_TEMP 20;
+#define REF_TEMP 20
+#define REF_VOLT 23800
 #pragma codepage 0
 
 void initserial( void );
@@ -247,29 +248,31 @@ void main(void)
       // and place the decimal mark correct
       // the supplied scalefactor is wrong please correct it!
 	    advalue *= SCALE_FACTOR;  
-
-        signed long temp = (signed long) (advalue - 23800);
+		
+        signed long temp = (signed long) (advalue - REF_VOLT);
         temp = temp / (unsigned) 200; 
 		    temp += REF_TEMP; // temp difference + base temp
 
         char ch;
-        int j, d;
+        int j, o, d;
         for (j = 0; j < 2; j++){
-          if (!j){
+          if (j == 0){
             d = temp / (unsigned) 10;
+			i = 0;
             if (d == 0)
               continue;
           }
           else
             d = temp % (unsigned) 10;
-          for(i=0;;i++)
+          for(o = 0;;i++)
           {
-             ch=digit(d, i);
+             ch=digit(d, o);
              message[i]=ch;
+			 o++;
              if(ch==0xFF)break; 
           } 
 		  }
-
+	
         if (mode == 0) mode = 1;
 	reference = 0;
 	  // the supplied number of decimals is wrong please correct it!
