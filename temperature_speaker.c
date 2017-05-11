@@ -246,17 +246,11 @@ void main(void)
       // multiply with integer scalefactor
       // and place the decimal mark correct
       // the supplied scalefactor is wrong please correct it!
-	    advalue *= SCALE_FACTOR ;  
+	    advalue *= SCALE_FACTOR;  
 
-      if (!reference){
-        ref = advalue;
-        reference = 1;
-        continue;
-      }
-      else {
-        signed long temp = (signed long) advalue - ref;
-        temp = temp / (unsigned) 20; 
-		temp += REF_TEMP; // temp difference + base temp
+        signed long temp = (signed long) (advalue - 23800);
+        temp = temp / (unsigned) 200; 
+		    temp += REF_TEMP; // temp difference + base temp
 
         char ch;
         int j, d;
@@ -275,7 +269,6 @@ void main(void)
              if(ch==0xFF)break; 
           } 
 		  }
-        }
 
         if (mode == 0) mode = 1;
 	reference = 0;
