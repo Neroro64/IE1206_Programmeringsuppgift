@@ -2,14 +2,14 @@
 #include "16F690.h"
 #include "int16Cxx.h"
 #pragma config |= 0x00D2  /* use HS-XTAL 14.7456 MHz */
-#pragma bit scl_IIC @ PORTB.6
-#pragma bit sda_IIC @ PORTB.4
+#pragma bit scl_IIC @ PORTB.6 
+#pragma bit sda_IIC @ PORTB.4 
 
 #define  WRITE_sda() TRISB.4 = 0 // SDA must be output when writing
 #define  READ_sda()  TRISB.4 = 1 // SDA must be input when reading
 
 /* This value is correct for unipolar AD values                      */ 
-#define OFFSET 0
+//#define OFFSET 0
 /* The SCALE_FACTOR value is wrong - you should correct it!          */
 #define SCALE_FACTOR 49
 /* The DECIMALS value is wrong - you should correct it!              */
@@ -18,18 +18,20 @@
 #define UN_SIGNED 1
 
 /* Decimal mark: point or comma - what do you like?                   */
-#define DECIMAL_MARK ','
+//#define DECIMAL_MARK ','
 
-//base temp
+//Reference temperature, measured in advance
 #define REF_TEMP 20
+//Reference voltage, measured in advance
 #define REF_VOLT 23800
 #pragma codepage 0
 
-void initserial( void );
+/* Function prototypes */
+//(remove)void initserial( void );
 void ADinit( void );
-void putchar( char );
-void string_out( const char * ); 
-void longDecimal_out(long number, char decimalPlaces, bit un_signed); 
+//(remove)void putchar( char );
+//(remove)void string_out( const char * ); 
+//(remove)void longDecimal_out(long number, char decimalPlaces, bit un_signed); 
 void delay10( char );
 
 void ack_polling(void);
@@ -41,11 +43,11 @@ char read_eeprom(char, char);
 void write_eeprom(char, char, char);
 char phonemestart_hi(char);
 char phonemestart_lo(char);
-char sentence(char);
+//(remove)char sentence(char);
 
 
 
-char digit(int, char);
+char returnDigitAddress(int, char);
 char zero(char);
 char one(char);
 char two(char);
@@ -60,14 +62,14 @@ char nine(char);
 /* Global variables */
 #pragma rambank 1
 char message[61];  // must be long enough for the message
-#pragma codepage 0
+//(remove)#pragma codepage 0
 char mode;
 char index;
 char phoneme;
 unsigned long count;
 
-int reference;
-unsigned long ref;
+//(remove)int reference;
+//(remove)unsigned long ref;
 
 #pragma origin 4
 /* interrupt routine                      */
@@ -97,6 +99,7 @@ interrupt int_server( void )
 
        case 1: // get new phoneme or pause
         phoneme = message[index];
+       	//(test) message[index] = 0x00 or 0xFF;
         index++;  // phoneme is read, so update the index
 
         if(phoneme == 0xFF) // 0xFF means end of message
@@ -167,7 +170,7 @@ interrupt int_server( void )
 
 void main(void)
 {
-  
+  /* Setting up ports */
   unsigned long advalue;
   TRISC.0 = 0; // lightdiode at RC0 is output
   PORTC.0 = 0; // no light
@@ -182,12 +185,12 @@ void main(void)
   TRISA.3 = 1 ; // SW1 input
 
 
-  initserial();
+  //(remove)initserial();
   ADinit();
   delay10(100); 
 
   // Header text
-  string_out("U [V]\r\n");
+  //(remove)string_out("U [V]\r\n");
     /* Setup TIMER2 */
     /*
     0.xxxx.x.xx  - unimplemented
@@ -223,17 +226,16 @@ void main(void)
      }*/
 
     index =0;  
-    mode = 0; // OK, now we start talking
-
+    //(remove)mode = 0; // OK, now we start talking
+/* Main loop */
   while(1)
    {
-    //-----------------------------------------------
     if(mode !=0) PORTC.0 = 1; // LED on when talking
     else PORTC.0 = 0;
-    //if(PORTA.3 == 0 && mode == 0) mode = 1; // SW1 talk again
+    //(remove)if(PORTA.3 == 0 && mode == 0) mode = 1; // SW1 talk again
      
      while(PORTA.3) ; // wait for key pressed - new measurement 
-     //if (mode == 0) mode = 1;
+     //(remove)if (mode == 0) mode = 1;
 	   delay10(100); 
 	   PORTC.0=1;       // LED Sampling indicator
 	
@@ -242,39 +244,40 @@ void main(void)
       while(GO);    // wait for done
       advalue = ADRESH*256;    // read result 10 bit
       advalue += ADRESL;
-	    advalue -= OFFSET;  // no offset needed
+	    //(remove)advalue -= OFFSET;  // no offset needed
       // 1024 -> 5,0000 [V]
       // multiply with integer scalefactor
       // and place the decimal mark correct
       // the supplied scalefactor is wrong please correct it!
 	    advalue *= SCALE_FACTOR;  
 		
-        signed long temp = (signed long) (advalue - REF_VOLT);
-        temp = temp / (unsigned) 200; 
-		    temp += REF_TEMP; // temp difference + base temp
+        signed long temp = (signed long) (advalue - REF_VOLT); // Current temperature = (voltage difference / K) + reference temperature
+        temp = temp / (unsigned) 200; // K = 20.5 mV/C 
+		    temp += REF_TEMP; // temp now holds the current temperature value
 
         char ch;
-        int j, o, d;
+        int j, o, d; // temporary variables
+		/* Outer for-loop, loops two times */
         for (j = 0; j < 2; j++){
           if (j == 0){
-            d = temp / (unsigned) 10;
+            d = temp / (unsigned) 10; // d = first digit of the temperature value
 			i = 0;
-            if (d == 0)
+            if (d == 0) // Continues to next loop if the first digit is 0
               continue;
           }
           else
-            d = temp % (unsigned) 10;
+            d = temp % (unsigned) 10; // d = second digit
           for(o = 0;;i++)
           {
-             ch=digit(d, o);
-             message[i]=ch;
+             ch=returnDigitAddress(d, o); // getting the address for phonemes 
+             message[i]=ch; // and storing them in message[]
 			 o++;
-             if(ch==0xFF)break; 
+             if(ch==0xFF)break;
           } 
 		  }
 	
-        if (mode == 0) mode = 1;
-	reference = 0;
+        if (mode == 0) mode = 1; // start talking
+	//reference = 0;
 	  // the supplied number of decimals is wrong please correct it!
       // longDecimal_out(advalue, DECIMALS, UN_SIGNED); 
       // putchar('\r'); putchar('\n');
@@ -317,15 +320,15 @@ void ADinit( void )
 
 /* **** bitbanging serial communication **** */
 
-void initserial( void )  /* initialise PIC16F690 bbCom */
+/* void initserial( void )   initialise PIC16F690 bbCom 
 {
    ANSEL.0 = 0; // No AD on RA0
    PORTA.0 = 1; // marking line
    TRISA.0 = 0; // output to PK2 UART-tool
    return;      
 }
-
-
+*/
+/*
 void putchar( char ch )  // sends one char bitbanging
 {
   char bitCount, ti;
@@ -352,7 +355,7 @@ void string_out(const char * string)
      putchar(k); 
    }
 }
-
+*/
 
 /* **** print decimal number **** */
 
@@ -533,7 +536,7 @@ void delay10( char n)
 	return 0xFF;
 }*/
 #pragma codepage 2
-char digit(int value, char i) {
+char returnDigitAddress(int value, char i) { // this function contains a switch-statement and returns addresses of phonemes for the corresponding digit
   switch (value){
     case 0: return zero(i); break;
     case 1: return one(i); break;
@@ -561,7 +564,7 @@ char zero (char i){
 }
 char one (char i){
   skip(i);
-  return 0x2E; // one
+  return 0x2E; 
   return 0x20;
   return 0x1B;
   return 0x04;
@@ -569,7 +572,7 @@ char one (char i){
 }
 char two (char i){
   skip(i);
-  return 0x0D; // two
+  return 0x0D; 
   return 0x16;
   return 0x16;
   return 0x04;
@@ -577,7 +580,7 @@ char two (char i){
 }
 char three (char i){
   skip(i);
-  return 0x1D; // three
+  return 0x1D; 
   return 0x0E;
   return 0x13;
   return 0x04;
@@ -585,14 +588,14 @@ char three (char i){
 }
 char four (char i){
   skip(i);
-  return 0x28; // four
+  return 0x28; 
   return 0x3A;
   return 0x04;
   return 0xFF;
 }
 char five (char i){
   skip(i);
-   return 0x28; // five
+   return 0x28; 
   return 0x06;
   return 0x23;
   return 0x04;
@@ -600,7 +603,7 @@ char five (char i){
 }
 char six (char i){
   skip(i);
-  return 0x37; // sex
+  return 0x37; 
   return 0x13;
   return 0x29;
   return 0x37;
@@ -609,7 +612,7 @@ char six (char i){
 }
 char seven (char i){
   skip(i);
-  return 0x37; // seven
+  return 0x37; 
   return 0x13;
   return 0x23;
   return 0x13;
