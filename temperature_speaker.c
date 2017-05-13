@@ -8,30 +8,16 @@
 #define  WRITE_sda() TRISB.4 = 0 // SDA must be output when writing
 #define  READ_sda()  TRISB.4 = 1 // SDA must be input when reading
 
-/* This value is correct for unipolar AD values                      */ 
-//#define OFFSET 0
-/* The SCALE_FACTOR value is wrong - you should correct it!          */
 #define SCALE_FACTOR 49
-/* The DECIMALS value is wrong - you should correct it!              */
 #define DECIMALS 4
-/* This value is correct the AD-value is unsigned (allways positive) */
 #define UN_SIGNED 1
 
-/* Decimal mark: point or comma - what do you like?                   */
-//#define DECIMAL_MARK ','
-
-//Reference temperature, measured in advance
-#define REF_TEMP 20
-//Reference voltage, measured in advance
-#define REF_VOLT 23800
+#define REF_TEMP 20 //Reference temperature, measured in advance
+#define REF_VOLT 24800 //Reference voltage, measured in advance
 #pragma codepage 0
 
 /* Function prototypes */
-//(remove)void initserial( void );
 void ADinit( void );
-//(remove)void putchar( char );
-//(remove)void string_out( const char * ); 
-//(remove)void longDecimal_out(long number, char decimalPlaces, bit un_signed); 
 void delay10( char );
 
 void ack_polling(void);
@@ -43,7 +29,6 @@ char read_eeprom(char, char);
 void write_eeprom(char, char, char);
 char phonemestart_hi(char);
 char phonemestart_lo(char);
-//(remove)char sentence(char);
 
 
 
@@ -62,14 +47,10 @@ char nine(char);
 /* Global variables */
 #pragma rambank 1
 char message[61];  // must be long enough for the message
-//(remove)#pragma codepage 0
 char mode;
 char index;
 char phoneme;
 unsigned long count;
-
-//(remove)int reference;
-//(remove)unsigned long ref;
 
 #pragma origin 4
 /* interrupt routine                      */
@@ -99,7 +80,7 @@ interrupt int_server( void )
 
        case 1: // get new phoneme or pause
         phoneme = message[index];
-       	//(test) message[index] = 0x00 or 0xFF;
+       	message[index] = 0xFF; // to clean up the array
         index++;  // phoneme is read, so update the index
 
         if(phoneme == 0xFF) // 0xFF means end of message
@@ -170,13 +151,13 @@ interrupt int_server( void )
 
 void main(void)
 {
-  /* Setting up ports */
   unsigned long advalue;
+  char i;
+
+   /* Setting up ports */
   TRISC.0 = 0; // lightdiode at RC0 is output
   PORTC.0 = 0; // no light
-  //TRISB.6 = 1; // switch SW is input
-
-  char i;
+ 
   ANSELH  = 0 ; // PORTB digital
   PORTB.4 = 0 ; // PORTB.4 pending "0" 
   TRISB.4 = 1 ; // simulated open collector
@@ -184,109 +165,79 @@ void main(void)
   TRISC.5 = 0 ; // CCP PWM output
   TRISA.3 = 1 ; // SW1 input
 
-
-  //(remove)initserial();
   ADinit();
   delay10(100); 
-
-  // Header text
-  //(remove)string_out("U [V]\r\n");
-    /* Setup TIMER2 */
-    /*
+  /* Setup TIMER2 */
+  /*
     0.xxxx.x.xx  - unimplemented
     x.1000.x.xx  Postscaler 8
     x.xxxx.1.xx  TMR2 is on
     x.xxxx.x.00  Prescaler 1
-    */
-    T2CON = 0b0.1000.1.00;
-
-    /* Setup CCP1 PWM-mode  */ 
-    /*
+  */
+  T2CON = 0b0.1000.1.00;
+  
+  /* Setup CCP1 PWM-mode  */ 
+  /*
     00.xx.xxxx  Single PWM output
     xx.00.xxxx  PWM Duty Two LSB
     xx.xx.1100  11xx when Single PWM-mode
-    */
-    CCP1CON = 0b00.00.1100 ; 
+  */
+  CCP1CON = 0b00.00.1100 ; 
 
-    PR2 = 0x3F; // gives the highest PWM frequency for 8 bit resolution
+  PR2 = 0x3F; // gives the highest PWM frequency for 8 bit resolution
+  mode = 0;   // no talking yet
+  TMR2IE  = 1;   /* local enable  */
+  PEIE    = 1;   /* peripherals enable */
+  GIE     = 1;   /* global enable */
+  index =0;
 
-    mode = 0;   // no talking yet
+  /* Main loop */
+  while(1) {
+  	if(mode !=0) PORTC.0 = 1; // LED on when talking
+    else PORTC.0 = 0;   
+    while(PORTA.3) ; // wait for key pressed - new measurement 
+    delay10(100); 
 
-    TMR2IE  = 1;   /* local enable  */
-    PEIE    = 1;   /* peripherals enable */
-    GIE     = 1;   /* global enable */
-
-    /* load a sentence in the message buffer 
-    char ch;
-    for(i=0;;i++)
-     {
-       ch=sentence(i);
-       message[i]=ch;
-       if(ch==0xFF)break;  
-     }*/
-
-    index =0;  
-    //(remove)mode = 0; // OK, now we start talking
-/* Main loop */
-  while(1)
-   {
-    if(mode !=0) PORTC.0 = 1; // LED on when talking
-    else PORTC.0 = 0;
-    //(remove)if(PORTA.3 == 0 && mode == 0) mode = 1; // SW1 talk again
-     
-     while(PORTA.3) ; // wait for key pressed - new measurement 
-     //(remove)if (mode == 0) mode = 1;
-	   delay10(100); 
-	   PORTC.0=1;       // LED Sampling indicator
-	
-      /* Now measure the Voltage [V]  */
-      GO=1;         // start AD
-      while(GO);    // wait for done
-      advalue = ADRESH*256;    // read result 10 bit
-      advalue += ADRESL;
-	    //(remove)advalue -= OFFSET;  // no offset needed
-      // 1024 -> 5,0000 [V]
-      // multiply with integer scalefactor
-      // and place the decimal mark correct
-      // the supplied scalefactor is wrong please correct it!
-	    advalue *= SCALE_FACTOR;  
+    /* Now measure the Voltage [V]  */
+    GO=1;         // start AD
+    while(GO);    // wait for done
+    advalue = ADRESH*256;    // read result 10 bit
+    advalue += ADRESL;
+    // 1024 -> 5,0000 [V]
+    // multiply with integer scalefactor
+	advalue *= SCALE_FACTOR;  
 		
-        signed long temp = (signed long) (advalue - REF_VOLT); // Current temperature = (voltage difference / K) + reference temperature
-        temp = temp / (unsigned) 200; // K = 20.5 mV/C 
-		    temp += REF_TEMP; // temp now holds the current temperature value
-
-        char ch;
-        int j, o, d; // temporary variables
-		/* Outer for-loop, loops two times */
-        for (j = 0; j < 2; j++){
-          if (j == 0){
-            d = temp / (unsigned) 10; // d = first digit of the temperature value
-			i = 0;
-            if (d == 0) // Continues to next loop if the first digit is 0
-              continue;
-          }
-          else
-            d = temp % (unsigned) 10; // d = second digit
-          for(o = 0;;i++)
-          {
-             ch=returnDigitAddress(d, o); // getting the address for phonemes 
-             message[i]=ch; // and storing them in message[]
-			 o++;
-             if(ch==0xFF)break;
-          } 
-		  }
+    signed long temp = (signed long) (advalue - REF_VOLT); // Current temperature = (voltage difference / K) + reference temperature
+    temp = temp / (unsigned) 210; // K = 20.5 mV/C 
+	temp += REF_TEMP; // remove this line if measuring with ice as reference
+	// temp now holds the current temperature value
 	
-        if (mode == 0) mode = 1; // start talking
-	//reference = 0;
-	  // the supplied number of decimals is wrong please correct it!
-      // longDecimal_out(advalue, DECIMALS, UN_SIGNED); 
-      // putchar('\r'); putchar('\n');
-
-      delay10(100);         // Debounce
-      PORTC.0=0;          // LED off measurement done 
-      while (!PORTA.3) ;  // wait for key released
-      delay10(100);         // Debounce
-     }
+	char ch;
+    int j, o, d; // temporary variables
+	/* Outer for-loop, loops two times */
+    for (j = 0; j < 2; j++){
+    	if (j == 0){
+        	d = temp / (unsigned) 10; // d = first digit of the temperature value
+			i = 0;
+		}
+		
+        if (d == 0) continue; // Continues to next loop if the first digit is 0
+        else d = temp % (unsigned) 10; // d = second digit
+        for(o = 0;;i++)
+        {
+        	ch=returnDigitAddress(d, o); // getting the address for phonemes 
+            message[i]=ch; // and storing them in message[]
+			o++;
+            if(ch==0xFF)break;
+        } 
+	}
+	
+    if (mode == 0) mode = 1; // start talking
+    delay10(100);         // Debounce
+    PORTC.0=0;          // LED off measurement done 
+    while (!PORTA.3) ;  // wait for key released
+    delay10(100);         // Debounce
+	}
 }
 
 
@@ -317,81 +268,6 @@ void ADinit( void )
   ADCON0 = 0b1.0.0010.0.1; 
 }
 
-
-/* **** bitbanging serial communication **** */
-
-/* void initserial( void )   initialise PIC16F690 bbCom 
-{
-   ANSEL.0 = 0; // No AD on RA0
-   PORTA.0 = 1; // marking line
-   TRISA.0 = 0; // output to PK2 UART-tool
-   return;      
-}
-*/
-/*
-void putchar( char ch )  // sends one char bitbanging
-{
-  char bitCount, ti;
-  PORTA.0 = 0; // set startbit
-  for ( bitCount = 10; bitCount > 0 ; bitCount-- )
-   {
-     // delay one bit 104 usec at 4 MHz
-     // 5+18*5-1+1+9=104 without optimization 
-     ti = 18; do ; while( --ti > 0); nop(); 
-     Carry = 1;     // stopbit
-     ch = rr( ch ); // Rotate Right through Carry
-     PORTA.0 = Carry;
-   }
-  return;
-}
-
-void string_out(const char * string)
-{
-  char i, k;
-  for(i = 0 ; ; i++)
-   {
-     k = string[i];
-     if( k == '\0') return;   // found end of string
-     putchar(k); 
-   }
-}
-*/
-
-/* **** print decimal number **** */
-
-// void longDecimal_out(long number, char decimalPlaces, bit un_signed)
-// {
-//    char string[7]; // temporary buffer for reordering characters
-//    char i,temp;
-//    string[6] = '\0';
-//    string[0] = '+'; 
-//  if(!un_signed)
-//   {
-//     if (number < 0 )
-//      {
-//        string[0] = '-'; 
-//        number = -number;
-//      }
-//   } 
-  
-//    for (i = 5; ;i--)
-//      {
-//        temp = (uns16)number % 10;
-//        temp += '0';
-//        string[i]=temp;
-//        if (i==1) break;
-//        (uns16)number /= 10;
-//      }
-//    for(i = 0 ; ; i++)
-//      {
-//         if(i==6-decimalPlaces) putchar( DECIMAL_MARK ); 
-//         temp = string[i];
-//         if( temp == '\0') return;   // found end of string
-//         putchar(temp); 
-//      }
-// } 
-
-
 /* **** delay function **** */
 
 void delay10( char n)
@@ -403,140 +279,16 @@ void delay10( char n)
     } while ( --n > 0);
 }
 
-
-/* *********************************** */
-/*            HARDWARE                 */
-/* *********************************** */
-
-
-/*
-   Use "PICkit2 UART Tool" as a 9600 Baud terminal to save data.
-   with BitBanging routines.
-           _____________  ____________    
-          |             \/            | 
-    +5V---|Vdd        16F690       Vss|---GND
-          |RA5               RA0/(PGD)|bbTx ->- PK2Rx/PGD
-          |RA4/AN3   AN1/REF/RA1/(PGC)|------<- PGC
-          |RA3/!MCLR/(Vpp) RA2/AN2/INT|-<- U
-          |RC5/CCP                 RC0|->- LED
-          |RC4                     RC1|
-          |RC3                     RC2|
-          |RC6                     RB4|
-          |RC7                  RB5/Rx|
-          |RB7/Tx                  RB6|-<- SW
-          |___________________________|
-*/
-
-/* pictalk690.c  PICTalker program for 16F690 on PK2 Starterkit */
-/*      "Low pin count demo board"             J1      ________
-           ___________  ___________           1 RA5---|XTAL    |
-          |           \/           |          2 RA4---|14.7456 |
-    +5V---|Vdd      16F690      Vss|---GND    3 RA3   |________|
-     |X|--|RA5/CLKIN  RA0/AN0/(PGD)|          4 RC5->-PWM Speach
-     |X|--|RA4/CLKOUT     RA1/(PGC)|          5 RC4   LP-filter
-    SW1->-|RA3/!MCLR/(Vpp)  RA2/INT|          6 RC3
- Speach-<-|RC5/CCP              RC0|->-LED    7 RA0
- PWM      |RC4                  RC1|          8 RA1
-          |RC3                  RC2|          9 RA2
-          |RC6              RB4/SDA|-<-I2C   10 RC0
-          |RC7               RB5/Rx|         11 RC1
-          |RB7/Tx           RB6/SCL|->-I2C   12 RC2
-          |________________________|         13 +5V--- 
-                                             14 GND---
-*/
-/* On mini Breadboard
-  I2C EEPROM with allophones - 2k pullup on SDA
-        ___  ___
-       |   \/   |
- GND---|A0   Vcc|---+5V
- GND---|A1    WP|---+5V
- GND---|A2   SCL|-<-RB6/SCL
- GND---|GND  SDA|->-RB4/SDA
-       |________|
-  PWM LP-filter. RC-ladder: 4k7, 10n, 4k7, 10n 
-*/
-
-/* B Knudsen Cc5x C-compiler - not ANSI-C */
-
-
-
-
-
 /* ************************************************* */
 /*              FUNCTIONS FOR PICTALKER              */
 /* ************************************************* */
 
-/* sentence.c                                    */
-/* lookup table for sentence                     */
 /* opcodes are for the chip SP256                */
 /* the code "0xFF" is used as "end of sentence"  */
-
-/* "we speak not only to be heard but to be understood" */
-
-/*char sentence(char index) { 
-	skip(index);
-  return 0x37; // zero
-  return 0x13;
-  return 0x0E;
-  return 0x17;
-  return 0x04;
-  
-  return 0x2E; // one
-  return 0x20;
-  return 0x1B;
-  return 0x04;
-  
-  return 0x0D; // two
-  return 0x16;  
-  return 0x16;
-  return 0x04;
-  
-  return 0x1D; // three
-  return 0x0E;
-  return 0x13;
-  return 0x04;
-  
-  return 0x28; // four
-  return 0x3A;
-  return 0x04;
-  
-  return 0x28; // five
-  return 0x06;
-  return 0x23;
-  return 0x04;
-  
-  return 0x37; // sex
-  return 0x13;
-  return 0x29;
-  return 0x37;
-  return 0x04;
-  
-  return 0x37; // seven
-  return 0x13 ;
-  return 0x23;
-  return 0x13 ;
-  return 0x1D;
-  return 0x04;
-  
-  
-  return 0x14; // eight
-  return 0x0D;
-  return 0x04;
-  return 0x38; // nine
-  return 0x06;
-  return 0x1D;
-  return 0xFF;
-}*/
-	  
-
-/*char sentence(char index) {
-	skip(index);
-	return 0x0D;
-	return 0x16;
-	return 0xFF;
-}*/
 #pragma codepage 2
-char returnDigitAddress(int value, char i) { // this function contains a switch-statement and returns addresses of phonemes for the corresponding digit
+
+/* this function contains a switch-statement and returns addresses of phonemes for the corresponding digit */
+char returnDigitAddress(int value, char i) { 
   switch (value){
     case 0: return zero(i); break;
     case 1: return one(i); break;
@@ -553,6 +305,7 @@ char returnDigitAddress(int value, char i) { // this function contains a switch-
   return 0xFF;
 }
 
+/* The following functions contain sound sequences for digit 1 - 9 in Enligsh */
 char zero (char i){
   skip(i);
   return 0x37; 
@@ -595,7 +348,7 @@ char four (char i){
 }
 char five (char i){
   skip(i);
-   return 0x28; 
+  return 0x28; 
   return 0x06;
   return 0x23;
   return 0x04;
@@ -621,15 +374,15 @@ char seven (char i){
   return 0xFF;
 }
 char eight (char i){
-	skip(i);
-  return 0x14; // eight
+  skip(i);
+  return 0x14;
   return 0x0D;
   return 0x04;
   return 0xFF;
 }
 char nine (char i){
-	skip(i);
-   return 0x38; // nine
+  skip(i);
+  return 0x38;
   return 0x06;
   return 0x1D;
   return 0xFF;
@@ -653,15 +406,6 @@ char nine (char i){
 //Make sure the bits agree with the TRISB statements
 
 //=================
-/*      
-void ack_polling(void);
-void start(void);
-void stop(void);
-char read_byte(void);
-void send_byte(char);
-char read_eeprom(char, char);
-void write_eeprom(char, char, char);
-*/
 void ack_polling(void)
 {
     //wait for chip to respond
@@ -771,12 +515,6 @@ void send_byte(char out_byte)
     READ_sda();
     scl_IIC = 1;
 }
-
-
-
-
-
-
 
 /* lookup tables for allphone start adresses in the I2C-EEPROM        */
 /* all allphone data ends with "0" in the I2C-EEPROM                  */
@@ -910,3 +648,37 @@ char phonemestart_lo(char index)
   return 0xC0; // 0x3E  EL  as in angLE
   return 0x00; // 0x3F  BB2 as in Beast
 }
+
+/* *********************************** */
+/*            HARDWARE                 */
+/* *********************************** */
+
+/*
+   pictalk690.c  PICTalker program for 16F690 on PK2 Starterkit 
+   combined with ADVolt.c program for temperature measuring
+           _____________  ____________    
+          |             \/            | 							J1         ________
+    +5V---|Vdd        16F690       Vss|---GND						1 RA5 --- |XTAL    |
+  XTAL--- |RA5               RA0/(PGD)|bbTx ->- PK2Rx/PGD			2 RA4 --- |14.7456 |
+          |RA4/AN3   AN1/REF/RA1/(PGC)|------<- PGC					3 RA3     |________|
+          |RA3/!MCLR/(Vpp) RA2/AN2/INT|-<- U (thermometer)			4 RC5 ->- PWM Speach
+PWM Speach|RC5/CCP                 RC0|->- LED						5 RC4	LP-filter
+      PWM |RC4                     RC1|
+          |RC3                     RC2|
+          |RC6                     RB4|-<- I2C
+          |RC7                  RB5/Rx|
+          |RB7/Tx                  RB6|->- I2C
+          |___________________________|
+*/
+
+/* On mini Breadboard
+  I2C EEPROM with allophones - 2k pullup on SDA
+        ___  ___
+       |   \/   |
+ GND---|A0   Vcc|---+5V
+ GND---|A1    WP|---+5V
+ GND---|A2   SCL|-<-RB6/SCL
+ GND---|GND  SDA|->-RB4/SDA
+       |________|
+  PWM LP-filter. RC-ladder: 4k7, 10n, 4k7, 10n 
+*/
