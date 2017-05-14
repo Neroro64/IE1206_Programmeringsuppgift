@@ -1,4 +1,7 @@
-/* Cc5x C-compiler */
+/* TemperatureSpeaker.c */
+/* This is a modified composition of ADVolt.c and pictalk690.c */
+/* Marcus Jonsson Ewerbring & Nuo Chen */
+/* B Knudsen Cc5x C-compiler */
 #include "16F690.h"
 #include "int16Cxx.h"
 #pragma config |= 0x00D2  /* use HS-XTAL 14.7456 MHz */
