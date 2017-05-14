@@ -196,7 +196,7 @@ void main(void)
 
   /* Main loop */
   while(1) {
-  	if(mode !=0) PORTC.0 = 1; // LED on when talking
+    if(mode !=0) PORTC.0 = 1; // LED on when talking
     else PORTC.0 = 0;   
     while(PORTA.3) ; // wait for key pressed - new measurement 
     delay10(100); 
@@ -208,14 +208,14 @@ void main(void)
     advalue += ADRESL;
     // 1024 -> 5,0000 [V]
     // multiply with integer scalefactor
-	advalue *= SCALE_FACTOR;  
+    advalue *= SCALE_FACTOR;  
 		
     signed long temp = (signed long) (advalue - REF_VOLT); // Current temperature = (voltage difference / K) + reference temperature
-	temp = temp / (unsigned) 200; // K = 20.5 mV/C 
+    temp = temp / (unsigned) 200; // K = 20.5 mV/C 
 	//temp += REF_TEMP; // remove this line if measuring with ice as reference
 	// temp now holds the current temperature value
 	
-	char ch;
+    char ch;
     int j, o, d; // temporary variables
 	/* Outer for-loop, loops two times */
     for (j = 0; j < 2; j++){
