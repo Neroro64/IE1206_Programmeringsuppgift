@@ -132,6 +132,9 @@ interrupt int_server( void )
 }
 
 void main(void) {
+  unsigned long advalue;
+  char i;
+
    /* Setting up ports */
   TRISC.0 = 0; // lightdiode at RC0 is output
   PORTC.0 = 0; // no light
@@ -175,31 +178,17 @@ void main(void) {
   while(1){
   	if (mode != 0) PORTC.0 = 1; // LED on when talking
   	else PORTC.0 = 0;
-  	while (PORTA.3); // wait for button press
-	ADconverterTest();
-	delay10(100);
-	picTalkerTest();
-	while (!PORTA.3); // wait for button release
   }
 }
 
 void ADconverterTest(){
-	unsigned long advalue;
 	GO=1;
     while(GO);
     advalue = ADRESH*256;
     advalue += ADRESL;
 
-    if (advalue){
-    	char i;
-    	for (i = 0; i < 6; i++){
-    		if (i % 2)
-    			PORTC.0 = 0;
-    		else
-    			PORTC.0 = 1;
-    		delay10(100);
-    	}
-    }
+    if (advalue)
+    	PORTC.0 = 1;
 }
 
 void picTalkerTest() {
