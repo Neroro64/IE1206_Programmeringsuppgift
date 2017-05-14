@@ -13,7 +13,7 @@
 #define UN_SIGNED 1
 
 #define REF_TEMP 20 //Reference temperature, measured in advance
-#define REF_VOLT 24800 //Reference voltage, measured in advance
+#define REF_VOLT 25000 //Reference voltage, measured in advance
 #pragma codepage 0
 
 /* Function prototypes */
@@ -208,8 +208,8 @@ void main(void)
 	advalue *= SCALE_FACTOR;  
 		
     signed long temp = (signed long) (advalue - REF_VOLT); // Current temperature = (voltage difference / K) + reference temperature
-    temp = temp / (unsigned) 210; // K = 20.5 mV/C 
-	temp += REF_TEMP; // remove this line if measuring with ice as reference
+	temp = temp / (unsigned) 200; // K = 20.5 mV/C 
+	//temp += REF_TEMP; // remove this line if measuring with ice as reference
 	// temp now holds the current temperature value
 	
 	char ch;
@@ -219,14 +219,13 @@ void main(void)
     	if (j == 0){
         	d = temp / (unsigned) 10; // d = first digit of the temperature value
 			i = 0;
-		}
-		
-        if (d == 0) continue; // Continues to next loop if the first digit is 0
+			if (d == 0) continue;
+		} // Continues to next loop if the first digit is 0
         else d = temp % (unsigned) 10; // d = second digit
         for(o = 0;;i++)
         {
-        	ch=returnDigitAddress(d, o); // getting the address for phonemes 
-            message[i]=ch; // and storing them in message[]
+			ch = returnDigitAddress(d, o); // getting the address for phonemes
+			message[i]= ch; // and storing them in message[]
 			o++;
             if(ch==0xFF)break;
         } 
