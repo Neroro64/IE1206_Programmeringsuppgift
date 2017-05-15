@@ -217,67 +217,60 @@ void picTalkerTest() {
 /* "We speak not only to be heard but to be understood" */
 char sentence( char index)
 {
-        skip(index);
-        return 0x2E;
-        return 0x13;
-        return 0x03;
-        return 0x02;
-        return 0x37;
-        return 0x09;
-        return 0x13;
-        return 0x29;
-        return 0x03;
-        return 0x02;
-        return 0x38;
-        return 0x17;
-        return 0x0D;
-        return 0x03;
-        return 0x02;
-        return 0x35;
-        return 0x0B;
-        return 0x2D;
-        return 0x13;
-        return 0x03;
-        return 0x02;
-        return 0x0D;
-        return 0x1F;
-        return 0x03;
-        return 0x02;
-        return 0x3F;
-        return 0x13;
-        return 0x03;
-        return 0x02;
-        return 0x1B;
-        return 0x34;
-        return 0x15;
-        return 0x03;
-        return 0x02;
-        return 0x3F;
-        return 0x0F;
-        return 0x0D;
-        return 0x03;
-        return 0x02;
-        return 0x0D;
-        return 0x1F;
-        return 0x03;
-        return 0x02;
-        return 0x3F;
-        return 0x13;
-        return 0x03;
-        return 0x02;
-        return 0x0F;
-        return 0x0B;
-        return 0x00;
-        return 0x21;
-        return 0x34;
-        return 0x37;
-        return 0x0D;
-        return 0x1F;
-        return 0x15;
-        return 0x03;
-        return 0x02;
-        return 0xFF;
-    }
+  skip(index);
+  return 0x37; // zero 
+  return 0x13;
+  return 0x0E;
+  return 0x17;
+  return 0x04;
+  
+  return 0x2E; // one
+  return 0x20;
+  return 0x1B;
+  return 0x04;
+  
+  return 0x0D; // two 
+  return 0x16;
+  return 0x16;
+  return 0x04;
+  
+  return 0x1D; // three 
+  return 0x0E;
+  return 0x13;
+  return 0x04;
+  
+  return 0x28; // four 
+  return 0x3A;
+  return 0x04;
+  
+  return 0x28; // five 
+  return 0x06;
+  return 0x23;
+  return 0x04;
+  
+  return 0x37; // six 
+  return 0x13;
+  return 0x29;
+  return 0x37;
+  return 0x04;
+  
+  return 0x37; // seven 
+  return 0x13;
+  return 0x23;
+  return 0x13;
+  return 0x1D;
+  return 0x04;
+  
+  return 0x14; // eight
+  return 0x0D;
+  return 0x04;
+  
+  return 0x38; // nine
+  return 0x06;
+  return 0x1D;
+  return 0xFF;
+	
+}
 
 
 /* *********************************** */
