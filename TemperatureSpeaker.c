@@ -659,12 +659,12 @@ char phonemestart_lo(char index)
    pictalk690.c  PICTalker program for 16F690 on PK2 Starterkit 
    combined with ADVolt.c program for temperature measuring
            _____________  ____________    
-          |             \/            | 							J1         ________
-    +5V---|Vdd        16F690       Vss|---GND						1 RA5 --- |XTAL    |
-  XTAL--- |RA5               RA0/(PGD)|bbTx ->- PK2Rx/PGD			2 RA4 --- |14.7456 |
-          |RA4/AN3   AN1/REF/RA1/(PGC)|------<- PGC					3 RA3     |________|
-          |RA3/!MCLR/(Vpp) RA2/AN2/INT|-<- U (thermometer)			4 RC5 ->- PWM Speach
-PWM Speach|RC5/CCP                 RC0|->- LED						5 RC4	LP-filter
+          |             \/            | 				J1         ________
+    +5V---|Vdd        16F690       Vss|---GND				1 RA5 --- |XTAL    |
+  XTAL--- |RA5               RA0/(PGD)|bbTx ->- PK2Rx/PGD		2 RA4 --- |14.7456 |
+          |RA4/AN3   AN1/REF/RA1/(PGC)|------<- PGC			3 RA3     |________|
+          |RA3/!MCLR/(Vpp) RA2/AN2/INT|-<- U (thermometer)		4 RC5 ->- PWM Speach
+PWM Speach|RC5/CCP                 RC0|->- LED				5 RC4	LP-filter
       PWM |RC4                     RC1|
           |RC3                     RC2|
           |RC6                     RB4|-<- I2C
