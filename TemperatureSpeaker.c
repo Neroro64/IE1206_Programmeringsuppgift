@@ -34,7 +34,7 @@ char phonemestart_hi(char);
 char phonemestart_lo(char);
 
 
-
+/* These functions are written by ourselves */
 char returnDigitAddress(int, char);
 char zero(char);
 char one(char);
@@ -46,6 +46,7 @@ char six(char);
 char seven(char);
 char eight(char);
 char nine(char);
+/* ----------------------------------------*/
 
 /* Global variables */
 #pragma rambank 1
